@@ -316,6 +316,7 @@
       <div class="tile-time" id="t-zl-time"></div>
       <div class="tile-anomaly" id="t-zl-anomaly"></div>
       <div class="tile-missed" id="t-zl-missed"></div>
+      <div id="t-zl-rain" style="display:none;margin-top:6px;font-size:11px;font-weight:700;color:#1565C0;background:#E3F2FD;border-radius:4px;padding:4px 8px;">🌧️ Cable test N/A — Rain</div>
     </div>
 
     <div class="dash-tile" id="tile-giant">
@@ -473,7 +474,19 @@
       </div>
 
       <div class="section-title">Daily Safety Checks</div>
-      <button class="all-checks-btn" onclick="tickAll('zl-checks')">✅ Mark All as OK</button>
+
+      <!-- RAIN OVERRIDE -->
+      <div id="zl-rain-banner" style="display:none;background:#E3F2FD;border:1px solid #1565C0;border-left:4px solid #1565C0;border-radius:8px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:#0D47A1;">
+        🌧️ <strong>Rain Override Active</strong> — ZL39 (Wire dry & ice-free) and ZL40 (Test runs) are marked as <strong>N/A due to rain</strong> and will not trigger an alert.
+      </div>
+      <div style="margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <button class="all-checks-btn" onclick="tickAll('zl-checks')">✅ Mark All as OK</button>
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 14px;border:1px solid #1565C0;border-radius:6px;background:#E3F2FD;cursor:pointer;" onclick="toggleRainOverride()" id="zl-rain-toggle">
+          <span style="font-size:16px;">🌧️</span>
+          <span style="font-size:12px;font-weight:700;color:#1565C0;">Cable Test N/A — Raining</span>
+          <span id="zl-rain-indicator" style="width:14px;height:14px;border-radius:50%;background:#ccc;display:inline-block;margin-left:4px;"></span>
+        </div>
+      </div>
       <div class="check-grid" id="zl-checks">
         <!-- Checks rendered by JS -->
       </div>
@@ -1033,6 +1046,50 @@ function setLoading(btnId, loading) {
   }
 }
 
+// ── RAIN OVERRIDE ──────────────────────────────────────────
+
+let rainOverrideActive = false;
+
+function toggleRainOverride() {
+  rainOverrideActive = !rainOverrideActive;
+  const indicator = document.getElementById("zl-rain-indicator");
+  const banner    = document.getElementById("zl-rain-banner");
+  const zl39      = document.getElementById("ci-zl39");
+  const zl40      = document.getElementById("ci-zl40");
+  const cb39      = document.getElementById("cb-zl39");
+  const cb40      = document.getElementById("cb-zl40");
+
+  if (rainOverrideActive) {
+    indicator.style.background = "#1565C0";
+    banner.style.display = "block";
+    // Grey out ZL39 and ZL40 and mark them visually as N/A
+    [zl39, zl40].forEach(el => {
+      if (el) {
+        el.style.opacity = "0.5";
+        el.style.pointerEvents = "none";
+        el.style.background = "#E3F2FD";
+        el.style.borderColor = "#1565C0";
+        const code = el.querySelector(".check-code");
+        if (code) code.textContent = code.textContent.split(" ")[0] + " — N/A RAIN";
+      }
+    });
+    [cb39, cb40].forEach(cb => { if (cb) cb.checked = false; });
+  } else {
+    indicator.style.background = "#ccc";
+    banner.style.display = "none";
+    [zl39, zl40].forEach(el => {
+      if (el) {
+        el.style.opacity = "1";
+        el.style.pointerEvents = "auto";
+        el.style.background = "#FAFAFA";
+        el.style.borderColor = "";
+        const code = el.querySelector(".check-code");
+        if (code) code.textContent = code.textContent.replace(" — N/A RAIN", "");
+      }
+    });
+  }
+}
+
 // ── ZIPLINE SUBMIT ─────────────────────────────────────────
 
 async function submitZipline() {
@@ -1078,15 +1135,17 @@ async function submitZipline() {
     engineerSigned: getYN(signGroups[1]),
     techManagerSigned: getYN(signGroups[2]),
     comments: document.getElementById("zl-comments").value,
+    rainOverride: rainOverrideActive,
   };
 
   try {
     const res = await postData(payload);
     if (res.success) {
       const isOK = res.status.includes("ALL CLEAR");
+      const rainNote = rainOverrideActive ? "<br>🌧️ Cable test marked N/A due to rain — no alert sent for ZL39/ZL40." : "";
       showBanner("zl-status-banner", isOK ? "success" : "warning",
-        isOK ? "✅ All checks passed! Zipline check submitted successfully."
-              : `⚠️ Submitted with ${res.missed.length} missed/failed item(s): <strong>${res.missed.join(", ")}</strong><br>SNR Tech Manager has been notified.`);
+        isOK ? `✅ All checks passed! Zipline check submitted successfully.${rainNote}`
+              : `⚠️ Submitted with ${res.missed.length} missed/failed item(s): <strong>${res.missed.join(", ")}</strong><br>SNR Tech Manager has been notified.${rainNote}`);
     } else { showBanner("zl-status-banner","error","❌ Submission failed: " + (res.error || "Unknown error")); }
   } catch (e) { showBanner("zl-status-banner","error","❌ Network error. Check connection and try again."); }
   finally { setLoading("zl-submit-btn", false); btn.innerHTML = "🪂 Submit Zipline Daily Check"; }
@@ -1452,6 +1511,7 @@ async function loadDashboard() {
         timeEl.textContent   = "";
         anomEl.style.display = "none";
         missEl.style.display = "none";
+        if (a.key === "zipline") document.getElementById("t-zl-rain").style.display = "none";
       } else if (d.status.includes("ALL CLEAR")) {
         tile.className       = "dash-tile tile-ok";
         statusEl.className   = "tile-status ok";
@@ -1463,6 +1523,10 @@ async function loadDashboard() {
           anomEl.style.display = "block";
         } else { anomEl.style.display = "none"; }
         missEl.style.display = "none";
+        if (a.key === "zipline") {
+          const rainEl = document.getElementById("t-zl-rain");
+          rainEl.style.display = d.rainOverride ? "block" : "none";
+        }
       } else {
         tile.className       = "dash-tile tile-warn";
         statusEl.className   = "tile-status warn";
@@ -1472,6 +1536,10 @@ async function loadDashboard() {
         if (d.todayMissed) { missEl.textContent = "❌ Missed: " + d.todayMissed; missEl.style.display = "block"; }
         if (d.todayComments && d.todayComments !== "None" && d.todayComments.trim() !== "") {
           anomEl.textContent = "📝 " + d.todayComments; anomEl.style.display = "block";
+        }
+        if (a.key === "zipline") {
+          const rainEl = document.getElementById("t-zl-rain");
+          rainEl.style.display = d.rainOverride ? "block" : "none";
         }
       }
 
