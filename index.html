@@ -265,6 +265,33 @@
   .brow span:last-child  { font-weight: 700; color: var(--text); }
   .brow.ok   span:last-child { color: #2E7D32; }
   .brow.warn span:last-child { color: #E65100; }
+
+  /* ── SUBMISSIONS LOG ── */
+  .sub-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .sub-table th { background: var(--navy); color: white; padding: 9px 12px; text-align: left; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .sub-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .sub-table tr:hover td { background: #F5F5F5; }
+  .sub-table tr.row-ok   td { border-left: 3px solid #2E7D32; }
+  .sub-table tr.row-warn td { border-left: 3px solid #E65100; }
+  .sub-act-pill { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+  .act-zl { background: #BBDEFB; color: #1565C0; }
+  .act-gs { background: #C8E6C9; color: #2E7D32; }
+  .act-ss { background: #E1BEE7; color: #6A1B9A; }
+  .act-cl { background: #B2DFDB; color: #00695C; }
+  .sub-edit-btn { padding: 3px 10px; border: 1px solid var(--navy); border-radius: 4px; background: white; color: var(--navy); cursor: pointer; font-size: 11px; font-weight: 600; }
+  .sub-edit-btn:hover { background: #E3F2FD; }
+  .sub-filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .sub-filter-bar select { padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: white; }
+  .sub-filter-bar input[type=date] { padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: white; }
+  .pin-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 999; display: flex; align-items: center; justify-content: center; }
+  .pin-box { background: white; border-radius: 12px; padding: 32px; width: 300px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+  .pin-box h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--navy); }
+  .pin-box p { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
+  .pin-box input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 20px; text-align: center; letter-spacing: 8px; margin-bottom: 12px; }
+  .pin-box input:focus { outline: none; border-color: var(--navy); }
+  .pin-error { color: var(--red); font-size: 12px; margin-bottom: 10px; display: none; }
+  .edit-row-form { background: #FFFDE7; border: 1px solid #FDD835; border-radius: 8px; padding: 16px; margin-top: 12px; display: none; }
+  .edit-row-form.open { display: block; }
 </style>
 </head>
 <body>
@@ -285,6 +312,7 @@
     <button class="nav-tab" onclick="showPanel('chairlift')">🚡 Chairlift Rescue</button>
     <button class="nav-tab" onclick="showPanel('annual')">📋 Annual Certs</button>
     <button class="nav-tab" onclick="showPanel('incident')">🚨 Incident Log</button>
+    <button class="nav-tab" onclick="showPanel('submissions')">📝 Submissions Log</button>
   </nav>
 </header>
 
@@ -317,6 +345,7 @@
       <div class="tile-anomaly" id="t-zl-anomaly"></div>
       <div class="tile-missed" id="t-zl-missed"></div>
       <div id="t-zl-rain" style="display:none;margin-top:6px;font-size:11px;font-weight:700;color:#1565C0;background:#E3F2FD;border-radius:4px;padding:4px 8px;">🌧️ Cable test N/A — Rain</div>
+      <a id="t-zl-link" href="#" target="_blank" style="display:none;margin-top:10px;font-size:11px;font-weight:700;color:white;background:#B71C1C;border-radius:4px;padding:5px 10px;text-decoration:none;">📋 View Log</a>
     </div>
 
     <div class="dash-tile" id="tile-giant">
@@ -327,6 +356,7 @@
       <div class="tile-time" id="t-gs-time"></div>
       <div class="tile-anomaly" id="t-gs-anomaly"></div>
       <div class="tile-missed" id="t-gs-missed"></div>
+      <a id="t-gs-link" href="#" target="_blank" style="display:none;margin-top:10px;font-size:11px;font-weight:700;color:white;background:#B71C1C;border-radius:4px;padding:5px 10px;text-decoration:none;">📋 View Log</a>
     </div>
 
     <div class="dash-tile" id="tile-slingshot">
@@ -337,6 +367,7 @@
       <div class="tile-time" id="t-ss-time"></div>
       <div class="tile-anomaly" id="t-ss-anomaly"></div>
       <div class="tile-missed" id="t-ss-missed"></div>
+      <a id="t-ss-link" href="#" target="_blank" style="display:none;margin-top:10px;font-size:11px;font-weight:700;color:white;background:#B71C1C;border-radius:4px;padding:5px 10px;text-decoration:none;">📋 View Log</a>
     </div>
 
     <div class="dash-tile" id="tile-chairlift">
@@ -347,6 +378,7 @@
       <div class="tile-time" id="t-cl-time"></div>
       <div class="tile-anomaly" id="t-cl-anomaly"></div>
       <div class="tile-missed" id="t-cl-missed"></div>
+      <a id="t-cl-link" href="#" target="_blank" style="display:none;margin-top:10px;font-size:11px;font-weight:700;color:white;background:#B71C1C;border-radius:4px;padding:5px 10px;text-decoration:none;">📋 View Log</a>
     </div>
 
   </div>
@@ -782,6 +814,87 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SUBMISSIONS LOG PANEL                                   -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="panel-submissions" class="panel">
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#37474F,#546E7A);">📝 Submissions Log — All Activities</div>
+    <div class="card-body">
+
+      <div id="sub-locked" style="text-align:center;padding:40px 20px;">
+        <div style="font-size:48px;margin-bottom:12px;">🔒</div>
+        <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:8px;">Protected Area</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Enter your PIN to access and edit submission logs.</div>
+        <button onclick="showSubPinOverlay()" style="padding:10px 24px;background:var(--navy);color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">🔓 Enter PIN</button>
+      </div>
+
+      <div id="sub-content" style="display:none;">
+
+        <div class="sub-filter-bar">
+          <select id="sub-filter-activity" onchange="renderSubLog()">
+            <option value="">All Activities</option>
+            <option value="Zipline">🪂 Zipline</option>
+            <option value="Giant Swing">🌀 Giant Swing</option>
+            <option value="Slingshot">🚀 Slingshot</option>
+            <option value="Chairlift Rescue">🚡 Chairlift Rescue</option>
+          </select>
+          <select id="sub-filter-status" onchange="renderSubLog()">
+            <option value="">All Statuses</option>
+            <option value="ALL CLEAR">All Clear</option>
+            <option value="ACTION">Action Required</option>
+          </select>
+          <input type="date" id="sub-filter-from" onchange="renderSubLog()" placeholder="From date">
+          <input type="date" id="sub-filter-to" onchange="renderSubLog()" placeholder="To date">
+          <button onclick="loadSubmissionsLog()" style="padding:7px 14px;background:var(--navy);color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">🔄 Refresh</button>
+          <button onclick="lockSubmissions()" style="padding:7px 14px;background:#455A64;color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">🔒 Lock</button>
+        </div>
+
+        <div id="sub-table-wrap" style="overflow-x:auto;">
+          <p style="color:var(--text-muted);">Loading submissions…</p>
+        </div>
+
+        <!-- Edit Form -->
+        <div id="sub-edit-form" class="edit-row-form">
+          <div class="section-title" style="margin-top:0;">✏️ Edit Submission Record</div>
+          <input type="hidden" id="sub-edit-key">
+          <input type="hidden" id="sub-edit-row">
+          <div class="form-grid two" style="margin-bottom:12px;">
+            <div class="form-group"><label>Operator Name</label><input id="sub-edit-op" type="text"></div>
+            <div class="form-group"><label>Shift Start</label><input id="sub-edit-start" type="time"></div>
+            <div class="form-group"><label>Comments / Anomalies</label><input id="sub-edit-comments" type="text"></div>
+            <div class="form-group"><label>Missed Items (comma separated)</label><input id="sub-edit-missed" type="text" placeholder="e.g. ZL39, ZL40"></div>
+            <div class="form-group"><label>Overall Status</label>
+              <select id="sub-edit-status">
+                <option value="ALL CLEAR ✅">ALL CLEAR ✅</option>
+                <option value="ACTION REQUIRED ⚠️">ACTION REQUIRED ⚠️</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:12px;"><label>Reason for Edit</label><input id="sub-edit-reason" type="text" placeholder="Briefly explain why this record is being edited…" style="background:#FFF9C4;"></div>
+          <button onclick="saveSubEdit()" style="padding:10px 20px;background:var(--navy);color:white;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">💾 Save Changes</button>
+          <button onclick="cancelSubEdit()" style="padding:10px 20px;background:#F5F5F5;color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;margin-left:8px;">Cancel</button>
+          <div id="sub-edit-banner" class="status-banner" style="margin-top:12px;"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PIN OVERLAY -->
+<div id="pin-overlay" class="pin-overlay" style="display:none;">
+  <div class="pin-box">
+    <div style="font-size:32px;margin-bottom:8px;">🔐</div>
+    <h3>Enter PIN</h3>
+    <p>This area is restricted to authorised managers only.</p>
+    <input type="password" id="pin-input" maxlength="4" placeholder="••••" oninput="if(this.value.length===4) verifyPin()">
+    <div id="pin-error" class="pin-error">❌ Incorrect PIN. Try again.</div>
+    <button onclick="verifyPin()" style="width:100%;padding:10px;background:var(--navy);color:white;border:none;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;">Unlock</button>
+    <button onclick="closePinOverlay()" style="width:100%;padding:8px;background:none;color:var(--text-muted);border:none;font-size:12px;cursor:pointer;margin-top:8px;">Cancel</button>
+  </div>
+</div>
+
 </main>
 
 <script>
@@ -1015,6 +1128,7 @@ function showPanel(name) {
   event.target.classList.add("active");
   if (name === "annual") loadCertifications();
   if (name === "dashboard") loadDashboard();
+  if (name === "submissions") initSubmissionsPanel();
 }
 
 // ── SUBMIT HELPERS ─────────────────────────────────────────
@@ -1488,10 +1602,10 @@ async function loadDashboard() {
     if (!data.success) return;
 
     const activities = [
-      { key: "zipline",    tileId: "tile-zipline",   statusId: "t-zl-status", opId: "t-zl-op", timeId: "t-zl-time", anomId: "t-zl-anomaly", missId: "t-zl-missed", bTotal: "b-zl-total", bClear: "b-zl-clear", bAction: "b-zl-action", bLast: "b-zl-last", bOp: "b-zl-op" },
-      { key: "giantSwing", tileId: "tile-giant",     statusId: "t-gs-status", opId: "t-gs-op", timeId: "t-gs-time", anomId: "t-gs-anomaly", missId: "t-gs-missed", bTotal: "b-gs-total", bClear: "b-gs-clear", bAction: "b-gs-action", bLast: "b-gs-last", bOp: "b-gs-op" },
-      { key: "slingshot",  tileId: "tile-slingshot", statusId: "t-ss-status", opId: "t-ss-op", timeId: "t-ss-time", anomId: "t-ss-anomaly", missId: "t-ss-missed", bTotal: "b-ss-total", bClear: "b-ss-clear", bAction: "b-ss-action", bLast: "b-ss-last", bOp: "b-ss-op" },
-      { key: "chairlift",  tileId: "tile-chairlift", statusId: "t-cl-status", opId: "t-cl-op", timeId: "t-cl-time", anomId: "t-cl-anomaly", missId: "t-cl-missed", bTotal: "b-cl-total", bClear: "b-cl-clear", bAction: "b-cl-action", bLast: "b-cl-last", bOp: "b-cl-op" },
+      { key: "zipline",    tileId: "tile-zipline",   statusId: "t-zl-status", opId: "t-zl-op", timeId: "t-zl-time", anomId: "t-zl-anomaly", missId: "t-zl-missed", linkId: "t-zl-link", bTotal: "b-zl-total", bClear: "b-zl-clear", bAction: "b-zl-action", bLast: "b-zl-last", bOp: "b-zl-op" },
+      { key: "giantSwing", tileId: "tile-giant",     statusId: "t-gs-status", opId: "t-gs-op", timeId: "t-gs-time", anomId: "t-gs-anomaly", missId: "t-gs-missed", linkId: "t-gs-link", bTotal: "b-gs-total", bClear: "b-gs-clear", bAction: "b-gs-action", bLast: "b-gs-last", bOp: "b-gs-op" },
+      { key: "slingshot",  tileId: "tile-slingshot", statusId: "t-ss-status", opId: "t-ss-op", timeId: "t-ss-time", anomId: "t-ss-anomaly", missId: "t-ss-missed", linkId: "t-ss-link", bTotal: "b-ss-total", bClear: "b-ss-clear", bAction: "b-ss-action", bLast: "b-ss-last", bOp: "b-ss-op" },
+      { key: "chairlift",  tileId: "tile-chairlift", statusId: "t-cl-status", opId: "t-cl-op", timeId: "t-cl-time", anomId: "t-cl-anomaly", missId: "t-cl-missed", linkId: "t-cl-link", bTotal: "b-cl-total", bClear: "b-cl-clear", bAction: "b-cl-action", bLast: "b-cl-last", bOp: "b-cl-op" },
     ];
 
     activities.forEach(a => {
@@ -1503,6 +1617,8 @@ async function loadDashboard() {
       const anomEl  = document.getElementById(a.anomId);
       const missEl  = document.getElementById(a.missId);
 
+      const linkEl  = document.getElementById(a.linkId);
+
       if (!d || d.status === "NOT SUBMITTED") {
         tile.className       = "dash-tile tile-none";
         statusEl.className   = "tile-status none";
@@ -1511,6 +1627,7 @@ async function loadDashboard() {
         timeEl.textContent   = "";
         anomEl.style.display = "none";
         missEl.style.display = "none";
+        if (linkEl) linkEl.style.display = "none";
         if (a.key === "zipline") document.getElementById("t-zl-rain").style.display = "none";
       } else if (d.status.includes("ALL CLEAR")) {
         tile.className       = "dash-tile tile-ok";
@@ -1523,6 +1640,7 @@ async function loadDashboard() {
           anomEl.style.display = "block";
         } else { anomEl.style.display = "none"; }
         missEl.style.display = "none";
+        if (linkEl) linkEl.style.display = "none";
         if (a.key === "zipline") {
           const rainEl = document.getElementById("t-zl-rain");
           rainEl.style.display = d.rainOverride ? "block" : "none";
@@ -1536,6 +1654,10 @@ async function loadDashboard() {
         if (d.todayMissed) { missEl.textContent = "❌ Missed: " + d.todayMissed; missEl.style.display = "block"; }
         if (d.todayComments && d.todayComments !== "None" && d.todayComments.trim() !== "") {
           anomEl.textContent = "📝 " + d.todayComments; anomEl.style.display = "block";
+        }
+        if (linkEl && d.sheetUrl) {
+          linkEl.href = d.sheetUrl;
+          linkEl.style.display = "inline-block";
         }
         if (a.key === "zipline") {
           const rainEl = document.getElementById("t-zl-rain");
@@ -1580,6 +1702,158 @@ async function loadDashboard() {
 function setText(id, val) {
   const el = document.getElementById(id);
   if (el) el.textContent = val;
+}
+
+// ── SUBMISSIONS LOG ────────────────────────────────────────
+
+const SUB_PIN = "1234";
+let subUnlocked = false;
+let subLogCache = [];
+
+function initSubmissionsPanel() {
+  if (subUnlocked) {
+    loadSubmissionsLog();
+  }
+  // Always show lock state on first visit — unlock on PIN
+}
+
+function showSubPinOverlay() {
+  document.getElementById("pin-input").value = "";
+  document.getElementById("pin-error").style.display = "none";
+  document.getElementById("pin-overlay").style.display = "flex";
+  setTimeout(() => document.getElementById("pin-input").focus(), 100);
+}
+
+function closePinOverlay() {
+  document.getElementById("pin-overlay").style.display = "none";
+}
+
+function verifyPin() {
+  const entered = document.getElementById("pin-input").value;
+  if (entered === SUB_PIN) {
+    subUnlocked = true;
+    closePinOverlay();
+    document.getElementById("sub-locked").style.display = "none";
+    document.getElementById("sub-content").style.display = "block";
+    loadSubmissionsLog();
+  } else {
+    document.getElementById("pin-error").style.display = "block";
+    document.getElementById("pin-input").value = "";
+  }
+}
+
+function lockSubmissions() {
+  subUnlocked = false;
+  document.getElementById("sub-locked").style.display = "block";
+  document.getElementById("sub-content").style.display = "none";
+  document.getElementById("sub-edit-form").classList.remove("open");
+}
+
+async function loadSubmissionsLog() {
+  document.getElementById("sub-table-wrap").innerHTML = "<p style='color:var(--text-muted);'>Loading…</p>";
+  try {
+    const res = await fetch(SCRIPT_URL + "?action=getSubmissionsLog");
+    const data = await res.json();
+    if (data.success) {
+      subLogCache = data.submissions;
+      renderSubLog();
+    } else {
+      document.getElementById("sub-table-wrap").innerHTML = "<p style='color:red;'>Failed to load submissions.</p>";
+    }
+  } catch (e) {
+    document.getElementById("sub-table-wrap").innerHTML = "<p style='color:red;'>Network error loading submissions.</p>";
+  }
+}
+
+function renderSubLog() {
+  const actFilter  = document.getElementById("sub-filter-activity")?.value || "";
+  const stFilter   = document.getElementById("sub-filter-status")?.value || "";
+  const fromFilter = document.getElementById("sub-filter-from")?.value || "";
+  const toFilter   = document.getElementById("sub-filter-to")?.value || "";
+
+  let rows = subLogCache || [];
+  if (actFilter) rows = rows.filter(r => r.activity === actFilter);
+  if (stFilter)  rows = rows.filter(r => r.status && r.status.includes(stFilter));
+  if (fromFilter) rows = rows.filter(r => r.dateRaw && r.dateRaw >= fromFilter);
+  if (toFilter)   rows = rows.filter(r => r.dateRaw && r.dateRaw <= toFilter);
+
+  if (!rows.length) {
+    document.getElementById("sub-table-wrap").innerHTML = "<p style='color:var(--text-muted);padding:20px 0;'>No submissions match the current filter.</p>";
+    return;
+  }
+
+  const actClass = { "Zipline": "act-zl", "Giant Swing": "act-gs", "Slingshot": "act-ss", "Chairlift Rescue": "act-cl" };
+  const rowClass = r => r.status && r.status.includes("ALL CLEAR") ? "row-ok" : "row-warn";
+
+  const html = `<table class="sub-table">
+    <thead><tr>
+      <th>Date</th><th>Activity</th><th>Operator</th><th>Shift Start</th>
+      <th>Status</th><th>Missed Items</th><th>Comments</th><th>Action</th>
+    </tr></thead>
+    <tbody>
+      ${rows.map(r => `<tr class="${rowClass(r)}">
+        <td>${r.date || "—"}</td>
+        <td><span class="sub-act-pill ${actClass[r.activity] || ""}">${r.activity}</span></td>
+        <td>${r.operator || "—"}</td>
+        <td>${r.shiftStart || "—"}</td>
+        <td style="font-weight:700;color:${r.status && r.status.includes("ALL CLEAR") ? "#2E7D32" : "#E65100"}">${r.status || "—"}</td>
+        <td style="color:#B71C1C;font-weight:600;">${r.missed || "—"}</td>
+        <td style="max-width:200px;white-space:normal;">${r.comments || "—"}</td>
+        <td><button class="sub-edit-btn" onclick='openSubEdit(${JSON.stringify(r)})'>✏️ Edit</button></td>
+      </tr>`).join("")}
+    </tbody>
+  </table>`;
+
+  document.getElementById("sub-table-wrap").innerHTML = html;
+}
+
+function openSubEdit(r) {
+  document.getElementById("sub-edit-key").value    = r.sheetKey;
+  document.getElementById("sub-edit-row").value    = r.rowIndex;
+  document.getElementById("sub-edit-op").value     = r.operator || "";
+  document.getElementById("sub-edit-start").value  = r.shiftStart || "";
+  document.getElementById("sub-edit-comments").value = r.comments || "";
+  document.getElementById("sub-edit-missed").value = r.missed || "";
+  document.getElementById("sub-edit-status").value = r.status || "ALL CLEAR ✅";
+  document.getElementById("sub-edit-reason").value = "";
+  document.getElementById("sub-edit-banner").className = "status-banner";
+  const form = document.getElementById("sub-edit-form");
+  form.classList.add("open");
+  form.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function cancelSubEdit() {
+  document.getElementById("sub-edit-form").classList.remove("open");
+}
+
+async function saveSubEdit() {
+  const reason = document.getElementById("sub-edit-reason").value.trim();
+  if (!reason) { showBanner("sub-edit-banner","error","⚠️ Please provide a reason for this edit."); return; }
+
+  const payload = {
+    action: "editSubmission",
+    sheetKey:   document.getElementById("sub-edit-key").value,
+    rowIndex:   parseInt(document.getElementById("sub-edit-row").value),
+    operator:   document.getElementById("sub-edit-op").value,
+    shiftStart: document.getElementById("sub-edit-start").value,
+    comments:   document.getElementById("sub-edit-comments").value,
+    missed:     document.getElementById("sub-edit-missed").value,
+    status:     document.getElementById("sub-edit-status").value,
+    editReason: reason,
+  };
+
+  const btn = document.querySelector("#sub-edit-form button");
+  btn.disabled = true; btn.textContent = "Saving…";
+
+  try {
+    const res = await postData(payload);
+    if (res.success) {
+      showBanner("sub-edit-banner","success","✅ Record updated successfully.");
+      await loadSubmissionsLog();
+      setTimeout(() => document.getElementById("sub-edit-form").classList.remove("open"), 1500);
+    } else { showBanner("sub-edit-banner","error","❌ " + (res.error || "Save failed.")); }
+  } catch (e) { showBanner("sub-edit-banner","error","❌ Network error."); }
+  finally { btn.disabled = false; btn.textContent = "💾 Save Changes"; }
 }
 
 // ── BOOT ───────────────────────────────────────────────────
