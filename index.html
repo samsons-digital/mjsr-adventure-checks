@@ -1394,10 +1394,9 @@ async function submitIncident() {
 async function loadCertifications() {
   document.getElementById("cert-table-wrap").innerHTML = "<p style='color:var(--text-muted);'>Loading…</p>";
   try {
-    const res = await fetch(SCRIPT_URL + "?action=getCertifications");
-    const data = await res.json();
-    if (data.success) {
-      window.certsCache = data.certs;
+    const res = await postData({ action: "getCertifications" });
+    if (res.success) {
+      window.certsCache = res.certs;
       renderCertTable();
     } else { document.getElementById("cert-table-wrap").innerHTML = "<p style='color:red;'>Failed to load certifications.</p>"; }
   } catch (e) { document.getElementById("cert-table-wrap").innerHTML = "<p style='color:red;'>Network error loading certifications.</p>"; }
@@ -1484,6 +1483,7 @@ function toInputDate(str) {
 async function saveCertification() {
   const certId = document.getElementById("edit-cert-id").value;
   const updatedBy = document.getElementById("edit-by").value.trim();
+  if (!certId) { showBanner("cert-status-banner","error","⚠️ No certification selected. Please click Update on a certification row first."); return; }
   if (!updatedBy) { showBanner("cert-status-banner","error","⚠️ Please enter your name in 'Updated By'."); return; }
 
   const btn = document.getElementById("cert-save-btn");
@@ -1597,8 +1597,8 @@ async function loadDashboard() {
   if (dateEl) dateEl.textContent = now.toLocaleDateString("en-GB", { weekday:"long", day:"2-digit", month:"long", year:"numeric" });
 
   try {
-    const res = await fetch(SCRIPT_URL + "?action=getDashboard");
-    const data = await res.json();
+    const res = await postData({ action: "getDashboard" });
+    const data = res;
     if (!data.success) return;
 
     const activities = [
@@ -1793,10 +1793,9 @@ function openSubmissionsFromTile(activity) {
 async function loadSubmissionsLog() {
   document.getElementById("sub-table-wrap").innerHTML = "<p style='color:var(--text-muted);'>Loading…</p>";
   try {
-    const res = await fetch(SCRIPT_URL + "?action=getSubmissionsLog");
-    const data = await res.json();
-    if (data.success) {
-      subLogCache = data.submissions;
+    const res = await postData({ action: "getSubmissionsLog" });
+    if (res.success) {
+      subLogCache = res.submissions;
       renderSubLog();
     } else {
       document.getElementById("sub-table-wrap").innerHTML = "<p style='color:red;'>Failed to load submissions.</p>";
