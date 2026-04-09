@@ -301,7 +301,7 @@
       <div style="color:#90CAF9;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">MJSR Adventure Activities</div>
       <div style="color:white;font-size:18px;font-weight:800;margin-top:2px;" id="dash-today-date">—</div>
     </div>
-    <button onclick="loadDashboard()" style="padding:8px 16px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:white;font-size:12px;font-weight:600;cursor:pointer;">🔄 Refresh</button>
+    <button id="dash-refresh-btn" onclick="refreshDashboard()" style="padding:8px 16px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:white;font-size:12px;font-weight:600;cursor:pointer;min-width:100px;">🔄 Refresh</button>
   </div>
 
   <!-- TODAY'S STATUS TILES -->
@@ -1392,6 +1392,31 @@ async function submitChairlift() {
 }
 
 // ── DASHBOARD ──────────────────────────────────────────────
+
+async function refreshDashboard() {
+  const btn = document.getElementById("dash-refresh-btn");
+  if (btn) {
+    btn.textContent = "⏳ Loading…";
+    btn.disabled = true;
+    btn.style.opacity = "0.7";
+  }
+  // Reset tiles to loading state
+  ["tile-zipline","tile-giant","tile-slingshot","tile-chairlift"].forEach(id => {
+    const tile = document.getElementById(id);
+    if (tile) tile.className = "dash-tile tile-none";
+  });
+  ["t-zl-status","t-gs-status","t-ss-status","t-cl-status"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = "Loading…"; el.className = "tile-status none"; }
+  });
+  await loadDashboard();
+  if (btn) {
+    btn.textContent = "✅ Updated";
+    btn.disabled = false;
+    btn.style.opacity = "1";
+    setTimeout(() => { btn.textContent = "🔄 Refresh"; }, 2000);
+  }
+}
 
 async function loadDashboard() {
   const now = new Date();
